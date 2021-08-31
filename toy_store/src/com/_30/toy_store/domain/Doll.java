@@ -23,10 +23,6 @@ public class Doll implements Toy {
 		private int stock = 0;
 		private double discount = 0.0;
 		
-//		public Builder() {
-//			
-//		}
-		
 		public Builder(String name, int price) {
 			if (name == null) {
 				throw new RuntimeException("Property NAME must not be NULL.");
@@ -73,7 +69,7 @@ public class Doll implements Toy {
 		public Doll build() {
 			if (name == null) {
 				// throw new Exception();		--> checked exception: 외부에서 예외 처리 해줘야 함.
-				// throw new RuntimeException(); --> 외부에서 try~catch로 감싸지 않아도 됨.
+				// throw new RuntimeException();--> 외부에서 try~catch로 감싸지 않아도 됨.
 				throw new RuntimeException("Property NAME must not be NULL.");
 			}
 			if (price < 0) {

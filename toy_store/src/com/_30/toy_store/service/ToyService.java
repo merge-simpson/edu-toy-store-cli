@@ -25,9 +25,17 @@ public final class ToyService {
 	
 	// todo, fixme 대문자로 쓰면 tasks에 생김.
 	public boolean addToy(Toy toy) {
-		// TODO (유효성) toy는 null이 아니어야 하며
-		// TODO (유효성) toy의 name이 다른 것들과 중복되지 않아야 한다.
-		return true;
+		// (유효성) toy는 null이 아니어야 하며
+		if (toy == null) {
+			return false;
+		}
+		for (Toy eachToy : toyList) {
+			// TODO (유효성) toy의 name이 다른 것들과 중복되지 않아야 한다.
+		}
+		toyList.add(toy);
+		
+		boolean isSaved = save();
+		return isSaved;
 	}
 	
 	public List<Toy> getToyAll() {
@@ -105,4 +113,5 @@ public final class ToyService {
 		
 		return true;
 	}
+	
 }
