@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com._30.toy_store.domain.BlockToy;
+import com._30.toy_store.domain.Doll;
 import com._30.toy_store.domain.Toy;
 
 public final class ToyService {
@@ -29,9 +31,40 @@ public final class ToyService {
 		if (toy == null) {
 			return false;
 		}
+		// (유효성) toy의 name이 다른 것들과 중복되지 않아야 한다.
 		for (Toy eachToy : toyList) {
-			// TODO (유효성) toy의 name이 다른 것들과 중복되지 않아야 한다.
+			// ▼ 오버라이딩 안 되어 있어 코드 중복이 발생하고 있고,
+			//		가독성이 떨어진다.
+			if (eachToy instanceof Doll) {
+				Doll eachDoll = ((Doll) eachToy);
+				if (toy instanceof Doll) {
+					Doll toyAsDoll = (Doll)toy;
+					if(toyAsDoll.getName().equals(eachDoll.getName())) {
+						return false;
+					}
+				} else if (toy instanceof BlockToy) {
+					BlockToy toyAsBlockToy = (BlockToy)toy;
+					if(toyAsBlockToy.getName().equals(eachDoll.getName())) {
+						return false;
+					}
+					
+				}
+			} else if (eachToy instanceof BlockToy) {
+				BlockToy eachDoll = ((BlockToy) eachToy);
+				if (toy instanceof Doll) {
+					Doll toyAsDoll = (Doll)toy;
+					if(toyAsDoll.getName().equals(eachDoll.getName())) {
+						return false;
+					}
+				} else if (toy instanceof BlockToy) {
+					BlockToy toyAsBlockToy = (BlockToy)toy;
+					if(toyAsBlockToy.getName().equals(eachDoll.getName())) {
+						return false;
+					}
+				}
+			}
 		}
+		
 		toyList.add(toy);
 		
 		boolean isSaved = save();
