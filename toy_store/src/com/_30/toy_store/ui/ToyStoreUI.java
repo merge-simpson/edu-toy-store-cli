@@ -69,6 +69,7 @@ public final class ToyStoreUI {
 				printBuyToyMenu();
 				break;
 			case EXIT:
+				toyService.save();
 				System.exit(0);// 무조건 프로세스 종료(메인 함수 종료)
 				break;
 			default:
