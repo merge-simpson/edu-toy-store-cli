@@ -83,12 +83,9 @@ public final class ToyService {
 	
 	public boolean save() {
 		// Distinguish the File and Directory for the next step.
-		int lastIndexOfBackslash = filePath.lastIndexOf("\\");
-		int lastIndexOfSlash = filePath.lastIndexOf("/");
-		int lastIndexOfSeparator = lastIndexOfBackslash > lastIndexOfSlash ?
-				lastIndexOfBackslash : lastIndexOfSlash;
+		int lastIndexOfSeparator = filePath.replace("/", "\\").lastIndexOf("\\");
 		String dirString = filePath.substring(0, lastIndexOfSeparator);
-
+		
 		// Create directory if not exists.
 		File directory = new File(dirString);
 		if (!directory.exists()) {
@@ -103,6 +100,7 @@ public final class ToyService {
 			oos.writeObject(toyList);
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 		
 		return true;
