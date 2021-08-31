@@ -124,11 +124,12 @@ public final class ToyStoreUI {
 			return; // this.history 조작하지 않고 return 하면 이 함수로 돌아옴.
 		}
 		
-		Toy toy;
+		Toy toy = null;
 		String name;
 		int price;
 		int stock;
 		double discount;
+		boolean isSuccessed;
 		try {
 			System.out.printf("[%s] 장난감 이름: ", toyTypeKor);
 			name = scanner.nextLine();
@@ -144,14 +145,13 @@ public final class ToyStoreUI {
 						.stock(stock)
 						.discount(discount)
 						.build();
-				toyService.addToy(toy);
 			} else if (sel == 2) {
 				toy = new BlockToy.Builder(name, price)
 						.stock(stock)
 						.discount(discount)
 						.build();
-				toyService.addToy(toy);
 			}
+			isSuccessed = toyService.addToy(toy);
 			/*
 			 * ▲ 발견할 수 있는 문제점: 
 			 * 	Doll의 Builder와 BlockToy의 Builder에
@@ -166,7 +166,12 @@ public final class ToyStoreUI {
 			return;
 		}
 		
-		System.out.println("상품 등록이 완료되었습니다.");
+		if (isSuccessed) {
+			System.out.println("상품 등록이 완료되었습니다.");
+		} else {
+			System.out.println("중복된 상품이 존재합니다.");
+		}
+		
 		this.history.add(HOME);
 	}
 	
