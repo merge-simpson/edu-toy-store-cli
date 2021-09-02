@@ -77,7 +77,31 @@ public final class ToyService {
 	
 	public List<Toy> getSearchedToy(String keyword) {
 		List<Toy> filteredToyList = new ArrayList<>();
-		// TODO filter list
+		String[] keywords = keyword.toLowerCase().split("[ \t\n]");
+		
+		for (Toy eachToy : toyList) {
+			String name = "";
+			if (eachToy instanceof Doll) {
+				name = ((Doll)eachToy).getName()
+						.replace(" ", "")
+						.replace("\t", "")
+						.replace("\n", "");
+			} else if (eachToy instanceof BlockToy) {
+				name = ((BlockToy)eachToy).getName()
+						.replace(" ", "")
+						.replace("\t", "")
+						.replace("\n", "");
+			}
+			
+			// boolean hasKeyword = 
+			//		Arrays.stream(keywords).anyMatch(name::contains);
+			for (String eachKeyword : keywords) {
+				if (name.contains(eachKeyword)) {
+					filteredToyList.add(eachToy);
+					break;
+				}
+			}
+		}
 		return filteredToyList;
 	}
 	

@@ -10,6 +10,7 @@ import com._30.toy_store.service.ToyService;
 // import java.util.*; // 이런 식의 import 와일드카드(*)는 삼가는 것.
 
 import com._30.toy_store.util.HistoryManager;
+import com._30.toy_store.util.Paginator;
 import com._30.toy_store.util.Scanner;
 
 // final 클래스: 상속이 되지 않는 클래스
@@ -21,6 +22,8 @@ public final class ToyStoreUI {
 	private final HistoryManager history;
 	private final ToyService toyService;
 	private static final Scanner scanner = new Scanner();
+	
+	private static final int PAGE_SIZE = 5;
 	
 	// enum 열거형을 대체하는 문자열들
 	private static final String HOME = "HOME";
@@ -204,7 +207,15 @@ public final class ToyStoreUI {
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		System.out.println("===       SEARCH  TOY       ===");
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		// TODO
+		System.out.println("이름 전체 또는 일부를 입력하십시오.");
+		System.out.println("(공백으로 키워드를 구분합니다.)");
+		String keyword = scanner.nextLine();
+		
+		List<Toy> filteredToys = toyService.getSearchedToy(keyword);
+		for (Toy toy : filteredToys) {
+			System.out.println(toy);
+		}
+		
 		this.history.add(HOME);
 	}
 	
@@ -212,7 +223,138 @@ public final class ToyStoreUI {
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		System.out.println("===       UPDATE  TOY       ===");
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+		
+		System.out.println("어떤 상품을 수정하시겠습니까?");
+		
 		// TODO
+		Toy selectedToy = null;
+		List<Toy> filteredList = toyService.getToyAll();
+		Paginator<Toy> paginator = new Paginator<Toy>(filteredList, PAGE_SIZE);
+		List<Toy> pagedList = paginator.getPagedPart();
+		boolean isSelected = false;
+		while (!isSelected) {
+			System.out.println(" 0. 검색");
+			for (int i = 0; i < pagedList.size(); i++) {
+				Toy toy = pagedList.get(i);
+				
+				if (toy instanceof Doll) {
+					Doll toyAsDoll = (Doll)toy;
+					System.out.println(
+							String.format(" %d. %s", i+1, toyAsDoll.getName()));
+				} else if (toy instanceof BlockToy) {
+					BlockToy toyAsBlockToy = (BlockToy)toy;
+					System.out.println(
+							String.format(" %d. %s", i+1, toyAsBlockToy.getName()));
+				}
+			}
+			if (!paginator.isFirstPage()) {
+				System.out.println(" 7. 이전 페이지");
+			}
+			if (paginator.hasNextPage()) {
+				System.out.println(" 8. 다음 페이지");
+			}
+			System.out.println(" 9. 뒤로 가기");
+			
+			int sel = scanner.nextInt();
+			switch (sel) {
+			case 0:
+				System.out.println("=== 검색:");
+				System.out.println(" 검색 키워드를 입력하세요.");
+				System.out.println(" (띄어쓰기로 각 키워드 구분)");
+				System.out.print  (">> ");
+				String keyword = scanner.nextLine();
+				filteredList = toyService.getSearchedToy(keyword);
+				break;
+			case 1: 
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+				isSelected = sel <= pagedList.size();	// true => while break
+				if (isSelected) {
+					selectedToy = pagedList.get(sel-1);
+				}
+				break;
+			case 7:
+				paginator.prevPage();
+				break;
+			case 8:
+				paginator.nextPage();
+				break;
+			case 9:
+				this.history.removeLastMenu(); // 뒤로 가기
+				return;
+			default:
+				break;
+			}
+		}// while (!selected)
+		
+		int sel = 999;
+		updatingLoop: while(sel != 0) {
+			System.out.println("어떤 속성을 수정하시겠습니까?");
+			System.out.println(" 1. 상품 이름");
+			System.out.println(" 2. 가격");
+			System.out.println(" 3. 재고");
+			System.out.println(" 4. 할인율(0.0 ~ 1.0");
+			System.out.println(" 5. 상품 분류 변경");
+			System.out.println(" 0. 완료");
+			System.out.print  (">> ");
+			
+			sel = scanner.nextInt();
+			// TODO
+			switch (sel) {
+			case 1:
+				System.out.print("새 이름 입력: ");
+				String name = scanner.nextLine();
+				break;
+			case 2:
+				System.out.print("새 가격 입력: ");
+				int price = scanner.nextInt();
+				break;
+			case 3:
+				System.out.print("재고 입력: ");
+				int stock = scanner.nextInt();
+				break;
+			case 4:
+				System.out.print("할인율 입력: ");
+				double discount = scanner.nextDouble();
+				break;
+			case 5:
+				System.out.println("1. 인형");
+				System.out.println("2. 블록");
+				System.out.print(">> ");
+				sel = scanner.nextInt();
+				if (sel == 1) {
+					if (Doll.class.equals(selectedToy.getClass())) {
+						System.out.println("상품 타입이 이미 Doll입니다.");
+						continue updatingLoop;
+					}
+					
+					BlockToy toyAsBlockToy = (BlockToy)selectedToy;
+					Doll modifiedToy = new Doll.Builder(toyAsBlockToy.getName()
+							, toyAsBlockToy.getPrice())
+							.stock(toyAsBlockToy.getStock())
+							.discount(toyAsBlockToy.getDiscount())
+							.build();
+					// TODO 리스트에 추가.
+				} else if (sel == 2) {
+					if (BlockToy.class.equals(selectedToy.getClass())) {
+						System.out.println("상품 타입이 이미 BlockToy입니다.");
+						continue updatingLoop;
+					}
+					Doll toyAsBlockToy = (Doll)selectedToy;
+					BlockToy modifiedToy = new BlockToy.Builder(toyAsBlockToy.getName()
+							, toyAsBlockToy.getPrice())
+							.stock(toyAsBlockToy.getStock())
+							.discount(toyAsBlockToy.getDiscount())
+							.build();
+					// TODO 변경
+				}
+				break;
+			case 0:
+				break updatingLoop;
+			}
+		}
 		this.history.add(HOME);
 	}
 	
