@@ -170,21 +170,6 @@ public final class ToyService {
 		return false;
 	}
 	
-	public static void main(String[] args) {
-		Class<?>[] nested = BlockToy.class.getNestMembers();
-		System.out.println(nested.length);
-		System.out.println(nested[0]);
-		System.out.println(nested[1]);
-		Class<?> _class;
-		try {
-			_class = Class.forName("com._30.toy_store.domain.BlockToy$Builder");
-			System.out.println(_class);
-			System.out.println(_class.getName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public boolean removeToy(Toy toy) {
 		boolean result = toy != null 
 				&& this.toyList.remove(toy);
