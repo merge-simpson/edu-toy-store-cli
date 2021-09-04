@@ -111,8 +111,10 @@ public final class ToyService {
 	}
 	
 	public boolean removeToy(Toy toy) {
-		// TODO remove toy and always return true.
-		return true;
+		boolean result = toy != null 
+				&& this.toyList.remove(toy);
+		
+		return result;
 	}
 	
 	public int buyToy(Toy toy, int amount) {

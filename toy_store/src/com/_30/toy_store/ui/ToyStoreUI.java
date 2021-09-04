@@ -224,15 +224,131 @@ public final class ToyStoreUI {
 		System.out.println("===       UPDATE  TOY       ===");
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		
-		System.out.println("어떤 상품을 수정하시겠습니까?");
+		Toy selectedToy = this.selectToyWithMessage("어떤 상품을 수정하시겠습니까?");
+		if (selectedToy == null) {
+			this.history.removeLastMenu(); // 뒤로 가기
+			return;
+		}
 		
+		int sel = 999;
+		updatingLoop: while(sel != 0) {
+			System.out.println("어떤 속성을 수정하시겠습니까?");
+			System.out.println(" 1. 상품 이름");
+			System.out.println(" 2. 가격");
+			System.out.println(" 3. 재고");
+			System.out.println(" 4. 할인율(0.0 ~ 1.0");
+			System.out.println(" 5. 상품 분류 변경");
+			System.out.println(" 0. 완료");
+			System.out.print  (">> ");
+			
+			sel = scanner.nextInt();
+			switch (sel) {
+			case 1:
+				System.out.print("새 이름 입력: ");
+				String name = scanner.nextLine();
+				if (selectedToy instanceof Doll) {
+					((Doll)selectedToy).setName(name);
+				} else if (selectedToy instanceof BlockToy) {
+					((BlockToy)selectedToy).setName(name);
+				}
+				break;
+			case 2:
+				System.out.print("새 가격 입력: ");
+				int price = scanner.nextInt();
+				if (selectedToy instanceof Doll) {
+					((Doll)selectedToy).setPrice(price);
+				} else if (selectedToy instanceof BlockToy) {
+					((BlockToy)selectedToy).setPrice(price);
+				}
+				break;
+			case 3:
+				System.out.print("재고 입력: ");
+				int stock = scanner.nextInt();
+				if (selectedToy instanceof Doll) {
+					((Doll)selectedToy).setStock(stock);
+				} else if (selectedToy instanceof BlockToy) {
+					((BlockToy)selectedToy).setStock(stock);
+				}
+				break;
+			case 4:
+				System.out.print("할인율 입력: ");
+				double discount = scanner.nextDouble();
+				if (selectedToy instanceof Doll) {
+					((Doll)selectedToy).setDiscount(discount);
+				} else if (selectedToy instanceof BlockToy) {
+					((BlockToy)selectedToy).setDiscount(discount);
+				}
+				break;
+			case 5:
+				System.out.println("1. 인형");
+				System.out.println("2. 블록");
+				System.out.print(">> ");
+				sel = scanner.nextInt();
+				if (sel == 1) {
+					if (Doll.class.equals(selectedToy.getClass())) {
+						System.out.println("상품 타입이 이미 Doll입니다.");
+						continue updatingLoop;
+					}
+					
+					BlockToy toyAsBlockToy = (BlockToy)selectedToy;
+					Doll modifiedToy = new Doll.Builder(toyAsBlockToy.getName()
+							, toyAsBlockToy.getPrice())
+							.stock(toyAsBlockToy.getStock())
+							.discount(toyAsBlockToy.getDiscount())
+							.build();
+					// TODO 리스트에 추가.
+					
+				} else if (sel == 2) {
+					if (BlockToy.class.equals(selectedToy.getClass())) {
+						System.out.println("상품 타입이 이미 BlockToy입니다.");
+						continue updatingLoop;
+					}
+					Doll toyAsBlockToy = (Doll)selectedToy;
+					BlockToy modifiedToy = new BlockToy.Builder(toyAsBlockToy.getName()
+							, toyAsBlockToy.getPrice())
+							.stock(toyAsBlockToy.getStock())
+							.discount(toyAsBlockToy.getDiscount())
+							.build();
+					// TODO 변경
+				}
+				break;
+			/*
+			case 0:
+				break;
+			*/
+			default:
+				break updatingLoop;
+			}
+		}
+		this.history.add(HOME);
+	}
+	
+	public void printDeleteToyMenu( ) {
+		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+		System.out.println("===       DELETE  TOY       ===");
+		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+		Toy selectedToy = this.selectToyWithMessage("어떤 상품을 삭제하시겠습니까?");
+		boolean isDeleted = this.toyService.removeToy(selectedToy);
+		System.out.println(isDeleted ? "상품이 삭제되었습니다.": "상품이 삭제되지 않았습니다.");
+		this.history.add(HOME);
+	}
+	
+	public void printBuyToyMenu( ) {
+		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+		System.out.println("===        BUY   TOY        ===");
+		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		// TODO
+		this.history.add(HOME);
+	}
+	
+	private Toy selectToyWithMessage(String message) {
 		Toy selectedToy = null;
 		List<Toy> filteredList = toyService.getToyAll();
 		Paginator<Toy> paginator = new Paginator<Toy>(filteredList, PAGE_SIZE);
 		List<Toy> pagedList = paginator.getPagedPart();
 		boolean isSelected = false;
 		while (!isSelected) {
+			System.out.println(message);
 			System.out.println(" 0. 검색");
 			for (int i = 0; i < pagedList.size(); i++) {
 				Toy toy = pagedList.get(i);
@@ -254,8 +370,10 @@ public final class ToyStoreUI {
 				System.out.println(" 8. 다음 페이지");
 			}
 			System.out.println(" 9. 뒤로 가기");
-			
+			System.out.println("--------------");
+			System.out.print  (">> ");
 			int sel = scanner.nextInt();
+			
 			switch (sel) {
 			case 0:
 				System.out.println("=== 검색:");
@@ -282,95 +400,11 @@ public final class ToyStoreUI {
 				paginator.nextPage();
 				break;
 			case 9:
-				this.history.removeLastMenu(); // 뒤로 가기
-				return;
+				return null;
 			default:
 				break;
 			}
 		}// while (!selected)
-		
-		int sel = 999;
-		updatingLoop: while(sel != 0) {
-			System.out.println("어떤 속성을 수정하시겠습니까?");
-			System.out.println(" 1. 상품 이름");
-			System.out.println(" 2. 가격");
-			System.out.println(" 3. 재고");
-			System.out.println(" 4. 할인율(0.0 ~ 1.0");
-			System.out.println(" 5. 상품 분류 변경");
-			System.out.println(" 0. 완료");
-			System.out.print  (">> ");
-			
-			sel = scanner.nextInt();
-			// TODO
-			switch (sel) {
-			case 1:
-				System.out.print("새 이름 입력: ");
-				String name = scanner.nextLine();
-				break;
-			case 2:
-				System.out.print("새 가격 입력: ");
-				int price = scanner.nextInt();
-				break;
-			case 3:
-				System.out.print("재고 입력: ");
-				int stock = scanner.nextInt();
-				break;
-			case 4:
-				System.out.print("할인율 입력: ");
-				double discount = scanner.nextDouble();
-				break;
-			case 5:
-				System.out.println("1. 인형");
-				System.out.println("2. 블록");
-				System.out.print(">> ");
-				sel = scanner.nextInt();
-				if (sel == 1) {
-					if (Doll.class.equals(selectedToy.getClass())) {
-						System.out.println("상품 타입이 이미 Doll입니다.");
-						continue updatingLoop;
-					}
-					
-					BlockToy toyAsBlockToy = (BlockToy)selectedToy;
-					Doll modifiedToy = new Doll.Builder(toyAsBlockToy.getName()
-							, toyAsBlockToy.getPrice())
-							.stock(toyAsBlockToy.getStock())
-							.discount(toyAsBlockToy.getDiscount())
-							.build();
-					// TODO 리스트에 추가.
-				} else if (sel == 2) {
-					if (BlockToy.class.equals(selectedToy.getClass())) {
-						System.out.println("상품 타입이 이미 BlockToy입니다.");
-						continue updatingLoop;
-					}
-					Doll toyAsBlockToy = (Doll)selectedToy;
-					BlockToy modifiedToy = new BlockToy.Builder(toyAsBlockToy.getName()
-							, toyAsBlockToy.getPrice())
-							.stock(toyAsBlockToy.getStock())
-							.discount(toyAsBlockToy.getDiscount())
-							.build();
-					// TODO 변경
-				}
-				break;
-			case 0:
-				break updatingLoop;
-			}
-		}
-		this.history.add(HOME);
-	}
-	
-	public void printDeleteToyMenu( ) {
-		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		System.out.println("===       DELETE  TOY       ===");
-		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		// TODO
-		this.history.add(HOME);
-	}
-	
-	public void printBuyToyMenu( ) {
-		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		System.out.println("===        BUY   TOY        ===");
-		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		// TODO
-		this.history.add(HOME);
-	}
+		return selectedToy;
+	}// fun: selectToyWithMessage(String message)
 }
