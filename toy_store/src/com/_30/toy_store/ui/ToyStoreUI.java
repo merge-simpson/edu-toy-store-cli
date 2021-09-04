@@ -330,7 +330,10 @@ public final class ToyStoreUI {
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		System.out.println("===        BUY   TOY        ===");
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
-		// TODO
+		Toy toy = selectToyWithMessage("구매할 상품을 선택하십시오.");
+		System.out.println("몇 개나 구매하시겠습니까?");
+		int amount = scanner.nextInt();
+		this.toyService.buyAndGetTotalPrice(toy, amount);
 		this.history.add(HOME);
 	}
 	

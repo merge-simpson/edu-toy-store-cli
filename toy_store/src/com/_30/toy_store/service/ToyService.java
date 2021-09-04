@@ -177,9 +177,37 @@ public final class ToyService {
 		return result;
 	}
 	
-	public int buyToy(Toy toy, int amount) {
-		// TODO purchase. Consider stock of toy.
-		return amount;
+	public int buyAndGetTotalPrice(Toy toy, int amount) {
+		if (toy == null
+				|| amount <= 0) {
+			return 0;
+		}
+		
+		// Check amount vs stock
+		int stock = 0;
+		if (toy instanceof Doll) {
+			stock = ((Doll) toy).getStock();
+		} else if (toy instanceof BlockToy) {
+			stock = ((BlockToy) toy).getStock();
+		}
+		
+		if (stock < amount) {
+			return 0;
+		}
+		
+		int discountedUnitPrice = 0;
+		
+		if (toy instanceof Doll) {
+			int unitPrice = ((Doll) toy).getPrice();
+			double inversedDiscount = 1 - ((Doll) toy).getDiscount();
+			discountedUnitPrice = (int) (unitPrice * inversedDiscount);
+		} else if (toy instanceof BlockToy) {
+			int unitPrice = ((BlockToy) toy).getPrice();
+			double inversedDiscount = 1 - ((BlockToy) toy).getDiscount();
+			discountedUnitPrice = (int) (unitPrice * inversedDiscount);
+		}
+		
+		return discountedUnitPrice * amount;
 	}
 	
 	public List<Toy> load() {
