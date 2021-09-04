@@ -7,6 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,9 +108,81 @@ public final class ToyService {
 		return filteredToyList;
 	}
 	
-	public boolean modifyToy(Toy toy) {
-		// TODO VALID CHECK: unique(toy.name)
-		return true;
+	// FIXME 교육 때는 삭제
+	public boolean modifyToyType(Toy toy, Class<? extends Toy> type) {
+		try {
+			String name = null;
+			int price = 0;
+			int stock = 0;
+			double discount = 0.0;
+			
+			if (toy instanceof Doll) {
+				Doll dollToy = (Doll)toy;
+				name = dollToy.getName();
+				price = dollToy.getPrice();
+				stock = dollToy.getStock();
+				discount = dollToy.getDiscount();
+			} else if (toy instanceof BlockToy) {
+				BlockToy blockToy = (BlockToy) toy;
+				name = blockToy.getName();
+				price = blockToy.getPrice();
+				stock = blockToy.getStock();
+				discount = blockToy.getDiscount();
+			}
+			
+			// 리플렉션
+			Class<?> builderClass = Class.forName(type.getName() + "$Builder");
+			Constructor<?> constructor = builderClass.getConstructor(String.class, Integer.class);
+			Method setName = builderClass.getMethod("name", String.class); 		// not used
+			Method setPrice = builderClass.getMethod("price", Integer.class);	// not used
+			Method setStock = builderClass.getMethod("stock", Integer.class);
+			Method setDiscount = builderClass.getMethod("discount", Double.class);
+			
+			Toy modifiedToy = (Toy) constructor.newInstance(name, price);
+			setStock.invoke(modifiedToy, stock);
+			setDiscount.invoke(modifiedToy, discount);
+			
+			for (int i = 0; i < this.toyList.size(); i++) {
+				Toy currentToy = this.toyList.get(i);
+				String currentToyName = null;
+				if (currentToy instanceof Doll) {
+					currentToyName = ((Doll) currentToy).getName();
+				} else if (currentToy instanceof BlockToy) {
+					currentToyName = ((BlockToy) currentToy).getName();
+				}
+				
+				if (name.equals(currentToyName)) {
+					this.toyList.remove(i);
+					this.toyList.add(i, modifiedToy);
+					return true;
+				}
+			}
+		} catch (ClassNotFoundException 
+				| NoSuchMethodException 
+				| SecurityException 
+				| InstantiationException 
+				| IllegalAccessException 
+				| IllegalArgumentException 
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
+	public static void main(String[] args) {
+		Class<?>[] nested = BlockToy.class.getNestMembers();
+		System.out.println(nested.length);
+		System.out.println(nested[0]);
+		System.out.println(nested[1]);
+		Class<?> _class;
+		try {
+			_class = Class.forName("com._30.toy_store.domain.BlockToy$Builder");
+			System.out.println(_class);
+			System.out.println(_class.getName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean removeToy(Toy toy) {

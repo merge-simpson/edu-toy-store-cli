@@ -63,7 +63,7 @@ public final class Paginator<T> {
 		
 		for (int inputtedIndex = this.beginIndexOfThisPage;
 				inputtedIndex < this.endIndexOfThisPage; inputtedIndex++ ) {
-			pagedList.add(targetList.get(inputtedIndex));
+			pagedList.add(this.targetList.get(inputtedIndex));
 		}
 		return pagedList;
 	}
@@ -71,7 +71,7 @@ public final class Paginator<T> {
 	// Ignore this.
 	// During education, just use "new ArrayList<>()".
 	public List<T> getPartBetweenIndexOf(int firstIndex, int lastIndexPlusOne) {
-		List<T> pagedList = targetList.subList(firstIndex, lastIndexPlusOne);
+		List<T> pagedList = this.targetList.subList(firstIndex, lastIndexPlusOne);
 		return pagedList;
 	}
 	
@@ -83,7 +83,7 @@ public final class Paginator<T> {
 			@SuppressWarnings("unchecked")
 			Constructor<? extends List<T>> constructor = 
 					(Constructor<? extends List<T>>) 
-					targetList.getClass().getConstructor();
+					this.targetList.getClass().getConstructor();
 			newList = constructor.newInstance();
 		} catch (NoSuchMethodException 
 				| SecurityException 

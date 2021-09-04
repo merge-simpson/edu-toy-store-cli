@@ -219,7 +219,7 @@ public final class ToyStoreUI {
 		this.history.add(HOME);
 	}
 	
-	public void printUpateToyMenu( ) {
+	public void printUpateToyMenu() {
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
 		System.out.println("===       UPDATE  TOY       ===");
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
@@ -237,7 +237,7 @@ public final class ToyStoreUI {
 			System.out.println(" 2. 가격");
 			System.out.println(" 3. 재고");
 			System.out.println(" 4. 할인율(0.0 ~ 1.0");
-			System.out.println(" 5. 상품 분류 변경");
+			System.out.println(" 5. 상품 분류 변경");	// FIXME 교육 떄는 제외
 			System.out.println(" 0. 완료");
 			System.out.print  (">> ");
 			
@@ -279,7 +279,7 @@ public final class ToyStoreUI {
 					((BlockToy)selectedToy).setDiscount(discount);
 				}
 				break;
-			case 5:
+			case 5: // FIXME 교육 때는 아예 제외.
 				System.out.println("1. 인형");
 				System.out.println("2. 블록");
 				System.out.print(">> ");
@@ -289,27 +289,20 @@ public final class ToyStoreUI {
 						System.out.println("상품 타입이 이미 Doll입니다.");
 						continue updatingLoop;
 					}
-					
-					BlockToy toyAsBlockToy = (BlockToy)selectedToy;
-					Doll modifiedToy = new Doll.Builder(toyAsBlockToy.getName()
-							, toyAsBlockToy.getPrice())
-							.stock(toyAsBlockToy.getStock())
-							.discount(toyAsBlockToy.getDiscount())
-							.build();
-					// TODO 리스트에 추가.
-					
+
+					boolean isModified = this.toyService.modifyToyType(selectedToy, Doll.class);
+					System.out.println(isModified ? 
+							"상품이 인형으로 성공적으로 변경되었습니다." 
+							: "상품이 올바르게 변경되지 않았습니다.(예외 발생)");
 				} else if (sel == 2) {
 					if (BlockToy.class.equals(selectedToy.getClass())) {
 						System.out.println("상품 타입이 이미 BlockToy입니다.");
 						continue updatingLoop;
 					}
-					Doll toyAsBlockToy = (Doll)selectedToy;
-					BlockToy modifiedToy = new BlockToy.Builder(toyAsBlockToy.getName()
-							, toyAsBlockToy.getPrice())
-							.stock(toyAsBlockToy.getStock())
-							.discount(toyAsBlockToy.getDiscount())
-							.build();
-					// TODO 변경
+					boolean isModified = this.toyService.modifyToyType(selectedToy, BlockToy.class);
+					System.out.println(isModified ? 
+							"상품이 인형으로 성공적으로 변경되었습니다." 
+							: "상품이 올바르게 변경되지 않았습니다.(예외 발생)");
 				}
 				break;
 			/*
@@ -321,7 +314,7 @@ public final class ToyStoreUI {
 			}
 		}
 		this.history.add(HOME);
-	}
+	}// printUpateToyMenu()
 	
 	public void printDeleteToyMenu( ) {
 		System.out.println("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
