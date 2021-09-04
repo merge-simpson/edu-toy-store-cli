@@ -19,7 +19,6 @@ import com._30.toy_store.domain.Toy;
 
 public final class ToyService {
 	
-	// TODO Create initial properties.(filePath:String)
 	private String filePath;
 	private List<Toy> toyList;
 	
