@@ -11,7 +11,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com._30.toy_store.domain.BlockToy;
 import com._30.toy_store.domain.Doll;
@@ -19,12 +21,30 @@ import com._30.toy_store.domain.Toy;
 
 public final class ToyService {
 	
-	private String filePath;
+	/* (TODO 여러 인스턴스가 똑같은 File을 건들면 안 됨.)
+	 * ∵ 한 파일에 여러 인스턴스가 접근하면 무결성 보장 안 됨.
+	 * (방법 1) 싱글톤 패턴
+	 * 	한계: 서로 다른 파일을 다루는 ToyService 인스턴스도 생성 불가.
+	 * 	보완: static Map 사용
+	 * 이 시스템에서만 사용할 때는 사실 ToyService가 싱글톤 패턴이어도 되고
+	 * 굳이 여러 파일을 사용할 필요가 없긴 함.
+	 */
+	private static final Map<String, ToyService> instanceMap = new HashMap<>();
+	
+	private final String filePath;
 	private List<Toy> toyList;
 	
-	public ToyService(String filePath) {
+	private ToyService(String filePath) {
 		this.filePath = filePath;
 		this.load();
+	}
+	
+	public static final ToyService getInstance(String filePath) {
+		ToyService instance = instanceMap.get(filePath);
+		if (instance == null) {
+			instance = instanceMap.put(filePath, new ToyService(filePath));
+		}
+		return instance;
 	}
 	
 	// todo, fixme 대문자로 쓰면 tasks에 생김.

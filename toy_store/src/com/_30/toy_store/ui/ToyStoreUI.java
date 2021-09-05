@@ -38,7 +38,7 @@ public final class ToyStoreUI {
 	
 	public ToyStoreUI(String filePath) {
 		history = new HistoryManager();
-		toyService = new ToyService(filePath);
+		toyService = ToyService.getInstance(filePath);
 	}
 	
 	// main 같은 역할
