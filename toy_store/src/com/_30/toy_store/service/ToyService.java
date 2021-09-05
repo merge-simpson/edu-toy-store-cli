@@ -7,8 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com._30.toy_store.domain.BlockToy;
 import com._30.toy_store.domain.Doll;
@@ -16,13 +21,30 @@ import com._30.toy_store.domain.Toy;
 
 public final class ToyService {
 	
-	// TODO Create initial properties.(filePath:String)
-	private String filePath;
+	/* (TODO 여러 인스턴스가 똑같은 File을 건들면 안 됨.)
+	 * ∵ 한 파일에 여러 인스턴스가 접근하면 무결성 보장 안 됨.
+	 * (방법 1) 싱글톤 패턴
+	 * 	한계: 서로 다른 파일을 다루는 ToyService 인스턴스도 생성 불가.
+	 * 	보완: static Map 사용
+	 * 이 시스템에서만 사용할 때는 사실 ToyService가 싱글톤 패턴이어도 되고
+	 * 굳이 여러 파일을 사용할 필요가 없긴 함.
+	 */
+	private static final Map<String, ToyService> instanceMap = new HashMap<>();
+	
+	private final String filePath;
 	private List<Toy> toyList;
 	
-	public ToyService(String filePath) {
+	private ToyService(String filePath) {
 		this.filePath = filePath;
 		this.load();
+	}
+	
+	public static final ToyService getInstance(String filePath) {
+		ToyService instance = instanceMap.get(filePath);
+		if (instance == null) {
+			instance = instanceMap.put(filePath, new ToyService(filePath));
+		}
+		return instance;
 	}
 	
 	// todo, fixme 대문자로 쓰면 tasks에 생김.
@@ -77,23 +99,134 @@ public final class ToyService {
 	
 	public List<Toy> getSearchedToy(String keyword) {
 		List<Toy> filteredToyList = new ArrayList<>();
-		// TODO filter list
+		String[] keywords = keyword.toLowerCase().split("[ \t\n]");
+		
+		for (Toy eachToy : toyList) {
+			String name = "";
+			if (eachToy instanceof Doll) {
+				name = ((Doll)eachToy).getName()
+						.replace(" ", "")
+						.replace("\t", "")
+						.replace("\n", "");
+			} else if (eachToy instanceof BlockToy) {
+				name = ((BlockToy)eachToy).getName()
+						.replace(" ", "")
+						.replace("\t", "")
+						.replace("\n", "");
+			}
+			
+			// boolean hasKeyword = 
+			//		Arrays.stream(keywords).anyMatch(name::contains);
+			for (String eachKeyword : keywords) {
+				if (name.contains(eachKeyword)) {
+					filteredToyList.add(eachToy);
+					break;
+				}
+			}
+		}
 		return filteredToyList;
 	}
 	
-	public boolean modifyToy(Toy toy) {
-		// TODO VALID CHECK: unique(toy.name)
-		return true;
+	// FIXME 교육 때는 삭제
+	public boolean modifyToyType(Toy toy, Class<? extends Toy> type) {
+		try {
+			String name = null;
+			int price = 0;
+			int stock = 0;
+			double discount = 0.0;
+			
+			if (toy instanceof Doll) {
+				Doll dollToy = (Doll)toy;
+				name = dollToy.getName();
+				price = dollToy.getPrice();
+				stock = dollToy.getStock();
+				discount = dollToy.getDiscount();
+			} else if (toy instanceof BlockToy) {
+				BlockToy blockToy = (BlockToy) toy;
+				name = blockToy.getName();
+				price = blockToy.getPrice();
+				stock = blockToy.getStock();
+				discount = blockToy.getDiscount();
+			}
+			
+			// 리플렉션
+			Class<?> builderClass = Class.forName(type.getName() + "$Builder");
+			Constructor<?> constructor = builderClass.getConstructor(String.class, Integer.class);
+			Method setName = builderClass.getMethod("name", String.class); 		// not used
+			Method setPrice = builderClass.getMethod("price", Integer.class);	// not used
+			Method setStock = builderClass.getMethod("stock", Integer.class);
+			Method setDiscount = builderClass.getMethod("discount", Double.class);
+			
+			Toy modifiedToy = (Toy) constructor.newInstance(name, price);
+			setStock.invoke(modifiedToy, stock);
+			setDiscount.invoke(modifiedToy, discount);
+			
+			for (int i = 0; i < this.toyList.size(); i++) {
+				Toy currentToy = this.toyList.get(i);
+				String currentToyName = null;
+				if (currentToy instanceof Doll) {
+					currentToyName = ((Doll) currentToy).getName();
+				} else if (currentToy instanceof BlockToy) {
+					currentToyName = ((BlockToy) currentToy).getName();
+				}
+				
+				if (name.equals(currentToyName)) {
+					this.toyList.remove(i);
+					this.toyList.add(i, modifiedToy);
+					return true;
+				}
+			}
+		} catch (ClassNotFoundException 
+				| NoSuchMethodException 
+				| SecurityException 
+				| InstantiationException 
+				| IllegalAccessException 
+				| IllegalArgumentException 
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	public boolean removeToy(Toy toy) {
-		// TODO remove toy and always return true.
-		return true;
+		boolean result = toy != null 
+				&& this.toyList.remove(toy);
+		
+		return result;
 	}
 	
-	public int buyToy(Toy toy, int amount) {
-		// TODO purchase. Consider stock of toy.
-		return amount;
+	public int buyAndGetTotalPrice(Toy toy, int amount) {
+		if (toy == null
+				|| amount <= 0) {
+			return 0;
+		}
+		
+		// Check amount vs stock
+		int stock = 0;
+		if (toy instanceof Doll) {
+			stock = ((Doll) toy).getStock();
+		} else if (toy instanceof BlockToy) {
+			stock = ((BlockToy) toy).getStock();
+		}
+		
+		if (stock < amount) {
+			return 0;
+		}
+		
+		int discountedUnitPrice = 0;
+		
+		if (toy instanceof Doll) {
+			int unitPrice = ((Doll) toy).getPrice();
+			double inversedDiscount = 1 - ((Doll) toy).getDiscount();
+			discountedUnitPrice = (int) (unitPrice * inversedDiscount);
+		} else if (toy instanceof BlockToy) {
+			int unitPrice = ((BlockToy) toy).getPrice();
+			double inversedDiscount = 1 - ((BlockToy) toy).getDiscount();
+			discountedUnitPrice = (int) (unitPrice * inversedDiscount);
+		}
+		
+		return discountedUnitPrice * amount;
 	}
 	
 	public List<Toy> load() {
