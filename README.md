@@ -26,8 +26,10 @@ So there will be new repository for the next version to distinguish between each
 
 > **공통**(Common)
 - 데이터 보존은 파일 시스템으로 구현한다.
+- 저장 파일을 불러 오며 시작한다.
 - 정상 종료 시 파일에 저장한다.
 - 추가/수정/삭제 시 파일에 반영한다.
+- 동일한 file에 여러 ToyService 인스턴스가 접근하지 않도록 한다.
 
 > **상품**(Product)
 - 상품 ID는 따로 두지 않고 상품 이름을 통해 관리한다.
@@ -49,7 +51,13 @@ So there will be new repository for the next version to distinguish between each
     - 0.0 이상 1.0 이하여야 한다.
 - 모든 상품은 Builder 패턴을 적용하여 생성한다.
 
-> **사이트맵**
+## 기타 비기능 요구 사항
+> Software Architecture Pattern: **MVC Pattern**
+- [베이스패키지].domain
+- [베이스패키지].service
+- [베이스패키지].ui
+
+## **사이트맵**
 
 - **HOME**
   - 상품 등록
